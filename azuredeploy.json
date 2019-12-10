@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.13",
     "parameters": {
       "srcIPInboundNSG": {
@@ -227,6 +227,18 @@
             "description": "Name of FW2 MGMT Public Address"
           }
         },
+        "FW1publicIPAddressDNS": {
+          "type": "String",
+          "metadata": {
+            "description": "Name of FW1 MGMT Public Address"
+          }
+        },
+        "FW2publicIPAddressDNS": {
+          "type": "String",
+          "metadata": {
+            "description": "Name of FW2 MGMT Public Address"
+          }
+        },
         "deployloadbalancer": {
           "type": "string",
           "defaultValue": "Yes",
@@ -236,6 +248,13 @@
           ],
           "metadata": {
             "description": "Enables deployment of Public Load Balancer"
+          }
+        },
+        "NSGName": {
+          "type": "String",
+          "defaultValue": "PaloAltoNSG",
+          "metadata": {
+            "description": "Name of Network Security Group for the PANs"
           }
         },
         "plbName": {
@@ -273,7 +292,6 @@
       "imageSku": "[parameters('imageSku')]",
       "imageOffer": "vmseries1",
       "imageVersion": "[parameters('imageVersion')]",
-      "nsgName": "DefaultNSG",
       "FW1nicName": "[concat(parameters('FW1Name'), '-eth')]",
       "FW2nicName": "[concat(parameters('FW2Name'), '-eth')]",
       "vnetID": "[resourceId(parameters('virtualNetworkExistingRGName'),concat('Microsoft.Network','/','virtualNetworks'),parameters('virtualNetworkName'))]",
@@ -309,7 +327,7 @@
         "properties": {
           "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
           "dnsSettings": {
-            "domainNameLabel": "[parameters('FW1publicIPAddressName')]"
+            "domainNameLabel": "[parameters('FW1publicIPAddressDNS')]"
           }
         }
       },
@@ -321,7 +339,7 @@
         "properties": {
           "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
           "dnsSettings": {
-            "domainNameLabel": "[parameters('FW2publicIPAddressName')]"
+            "domainNameLabel": "[parameters('FW2publicIPAddressDNS')]"
           }
         }
       },
@@ -336,7 +354,7 @@
       },
       {
         "type": "Microsoft.Network/networkSecurityGroups",
-        "name": "[variables('nsgName')]",
+        "name": "[parameters('NSGName')]",
         "apiVersion": "[variables('apiVersion')]",
         "location": "[resourceGroup().location]",
         "properties": {
@@ -618,7 +636,8 @@
             "osDisk": {
               "caching": "ReadWrite",
               "createOption": "FromImage",
-              "name": "[concat(parameters('FW1Name'),'_OSDisk_1')]"
+              "name": "[concat(parameters('FW1Name'),'_OSDisk_1')]",
+              "storageAccountType": "Premium_LRS"
           }
           },
           "networkProfile": {
